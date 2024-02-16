@@ -76,9 +76,9 @@ func handle(input string) (string, bool) {
 			return "", false
 		}
 		pin := rpio.Pin(pinNumber)
-		rpio.DetectEdge(pin, rpio.AnyEdge)
+		pin.Detect(rpio.AnyEdge)
 		edgePin := edge_pin{
-			pin:    &pin,
+			pin:    pin,
 			number: pinNumber,
 		}
 		edgePins = append(edgePins, edgePin)
@@ -175,7 +175,7 @@ func writeToConn(conn *websocket.Conn, input string) error {
 }
 
 type edge_pin struct {
-	pin    *rpio.Pin
+	pin    rpio.Pin
 	number int
 }
 
