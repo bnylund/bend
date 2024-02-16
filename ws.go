@@ -54,7 +54,7 @@ func handle(input string) (string, bool) {
 			return input, true
 		}
 		return "", false
-	} else if input == "get-gpio" {
+	} else if command == "get-gpio" {
 		pinNum, ok := getArgument(input, 1)
 		if !ok {
 			return "", false
@@ -66,7 +66,7 @@ func handle(input string) (string, bool) {
 		pin := rpio.Pin(pinNumber)
 		res := pin.Read()
 		return strconv.Itoa(int(res)), true
-	} else if input == "subscribe" {
+	} else if command == "subscribe" {
 		pinNum, ok := getArgument(input, 1)
 		if !ok {
 			return "", false
