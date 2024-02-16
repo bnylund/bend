@@ -50,6 +50,7 @@ func handle(input string) (string, bool) {
 			pin.High()
 			return input, true
 		} else if value == "0" {
+			pin.Low()
 			return input, true
 		}
 		return "", false
