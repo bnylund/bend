@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"net"
 	"net/http"
@@ -12,6 +13,8 @@ import (
 
 	"github.com/stianeikeland/go-rpio/v4"
 )
+
+var edgePins = []int{}
 
 func main() {
 	log.SetFlags(0)
@@ -43,13 +46,28 @@ func run() error {
 	}
 	log.Printf("listening on http://%v", l.Addr())
 
+	pool := pool{
+		connections: make(map[*connection]bool),
+	}
+
 	http.HandleFunc("/api", apiHandler)
-	http.HandleFunc("/ws", connectHandler)
+	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+		connectHandler(&pool, w, r)
+	})
 
 	s := &http.Server{
-		ReadTimeout:  time.Second * 10,
-		WriteTimeout: time.Second * 10,
+		ReadTimeout:  0,
+		WriteTimeout: 0,
 	}
+
+	go func() {
+		for i := 0; i < len(edgePins); i++ {
+			pin := rpio.Pin(edgePins[i])
+			if pin.EdgeDetected() {
+				broadcast(pool, fmt.Sprintf("pin-event %d %d", edgePins[i], pin.Read()))
+			}
+		}
+	}()
 
 	errc := make(chan error, 1)
 	go func() {
@@ -69,4 +87,13 @@ func run() error {
 	defer cancel()
 
 	return s.Shutdown(ctx)
+}
+
+func broadcast(pool pool, input string) {
+	for c := range pool.connections {
+		if err := writeToConn(c.ws, input); err != nil {
+			delete(pool.connections, c)
+			return
+		}
+	}
 }
