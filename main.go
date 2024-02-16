@@ -14,7 +14,7 @@ import (
 	"github.com/stianeikeland/go-rpio/v4"
 )
 
-var edgePins = []int{}
+var edgePins = []edge_pin{}
 
 func main() {
 	log.SetFlags(0)
@@ -62,9 +62,9 @@ func run() error {
 
 	go func() {
 		for i := 0; i < len(edgePins); i++ {
-			pin := rpio.Pin(edgePins[i])
-			if pin.EdgeDetected() {
-				broadcast(pool, fmt.Sprintf("pin-event %d %d", edgePins[i], pin.Read()))
+			if (*edgePins[i].pin).EdgeDetected() {
+				fmt.Printf("Broadcating pin change: 'pin-event %d %d' to %d clients", edgePins[i].number, (*edgePins[i].pin).Read(), len(pool.connections))
+				broadcast(pool, fmt.Sprintf("pin-event %d %d", edgePins[i].number, (*edgePins[i].pin).Read()))
 			}
 		}
 	}()

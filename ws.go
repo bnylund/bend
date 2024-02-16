@@ -76,8 +76,12 @@ func handle(input string) (string, bool) {
 			return "", false
 		}
 		pin := rpio.Pin(pinNumber)
-		pin.Detect(rpio.RiseEdge)
-		edgePins = append(edgePins, pinNumber)
+		rpio.DetectEdge(pin, rpio.AnyEdge)
+		edgePin := edge_pin{
+			pin:    &pin,
+			number: pinNumber,
+		}
+		edgePins = append(edgePins, edgePin)
 		return "", false
 	} else if input == "ping" {
 		return "pong", true
@@ -168,6 +172,11 @@ func writeToConn(conn *websocket.Conn, input string) error {
 		return fmt.Errorf("failed to w.Write: %w", err)
 	}
 	return w.Close()
+}
+
+type edge_pin struct {
+	pin    *rpio.Pin
+	number int
 }
 
 type connection struct {
