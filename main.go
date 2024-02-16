@@ -63,14 +63,11 @@ func run() error {
 	go func() {
 		for {
 			for i := 0; i < len(edgePins); i++ {
-				changed := edgePins[i].pin.EdgeDetected()
-				fmt.Printf("Did pin %d change? %d (value: %d)\n", edgePins[i].number, changed, edgePins[i].pin.Read())
-				if changed {
+				if edgePins[i].pin.EdgeDetected() {
 					fmt.Printf("Broadcating pin change: 'pin-event %d %d' to %d clients\n", edgePins[i].number, edgePins[i].pin.Read(), len(pool.connections))
 					broadcast(pool, fmt.Sprintf("pin-event %d %d", edgePins[i].number, edgePins[i].pin.Read()))
 				}
 			}
-			time.Sleep(10 * time.Second)
 		}
 	}()
 
